@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\User;
-
 /** @var \Laravel\Lumen\Routing\Router $router */
 
 /*
@@ -19,11 +17,12 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->get('/users', function () {
-    $users = User::all();
+// $router->group(['prefix' => '/api/v1', 'namespace' => 'App\Http\Controllers\V1'], function ($router) {
+//     $router->get('/users', 'UserController@all');
+//     // $router->put('car/{id}', 'CarController@updateCar');
+//     // $router->delete('car/{id}', 'CarController@deleteCar');
+//     // $router->get('car', 'CarController@index');
+// });
 
-    return response()->json([
-        'data' => $users,
-        'message' => 'Lista de usuários',
-    ], 200);
-});
+$router->get('/users', 'V1\UserController@all');
+$router->get('/user/{id}', 'V1\UserController@show');

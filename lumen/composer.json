@@ -1,0 +1,5 @@
+{
+    "require": {
+        "wn/lumen-generators": "^1.3"
+    }
+}
