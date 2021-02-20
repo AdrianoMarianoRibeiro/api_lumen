@@ -2,32 +2,55 @@
 
 namespace App\Utils;
 
+use Illuminate\Http\JsonResponse;
+
 /**
  * ResponseApi
  */
 abstract class ResponseApi
 {
-    public static function success(string $message = "Ação realizada com sucesso", $data, $httpCode = 200)
+    /**
+     * @param string $message
+     * @param $data
+     * @param int $httpCode
+     * @return JsonResponse
+     */
+    public static function success(string $message, $data, int $httpCode = 200): JsonResponse
     {
         return response()->json([
+            'code' => $httpCode,
             'message' => $message,
             'data' => $data,
         ], $httpCode);
     }
 
-    public static function warning(string $message = "Não foi possível executar essa operação", $data, $httpCode = 400)
+    /**
+     * @param string $message
+     * @param $data
+     * @param int $httpCode
+     * @return JsonResponse
+     */
+    public static function warning(string $message, $data, int $httpCode = 400): JsonResponse
     {
         return response()->json([
+            'code' => $httpCode,
             'message' => $message,
             'data' => $data,
         ], $httpCode);
     }
 
-    public static function error($message = "Não foi possível executar essa operação", $data, $httpCode = 500)
+    /**
+     * @param string $message
+     * @param $data
+     * @param int $httpCode
+     * @return JsonResponse
+     */
+    public static function error(string $message, $data, int $httpCode = 500): JsonResponse
     {
         return response()->json([
+            'code' => $httpCode,
             'message' => $message,
-            'dara' => $data,
+            'data' => $data,
         ], $httpCode);
     }
 }
