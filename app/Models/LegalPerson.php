@@ -16,6 +16,8 @@ class LegalPerson extends Model
 
     protected $primaryKey = 'person_id';
 
+    public $incrementing = false;
+
     protected $fillable = [
         'person_id', 'company_name',
     ];

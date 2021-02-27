@@ -14,6 +14,9 @@ use Illuminate\Http\Request;
  */
 class UserController extends Controller
 {
+    /**
+     * @return JsonResponse
+     */
     public function index(): JsonResponse
     {
         return response()->json(['id' => 1]);
@@ -37,14 +40,22 @@ class UserController extends Controller
         return UserService::findById($id);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function update(Request $request): JsonResponse
     {
         return UserService::update($request->all());
     }
 
-    public function destroy(string $id)
+    /**
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function destroy(string $id): JsonResponse
     {
-        //
+        return UserService::delete($id);
     }
 
     /**

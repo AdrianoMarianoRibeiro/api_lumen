@@ -16,6 +16,8 @@ class PhysicalPerson extends Model
 
     protected $primaryKey = 'person_id';
 
+    public $incrementing = false;
+
     protected $fillable = [
         'person_id', 'birth_date',
     ];
