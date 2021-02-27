@@ -9,11 +9,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
 
+/**
+ * Class User
+ * @property string person_id
+ * @property string email
+ * @property string password
+ * @package App\Models
+ */
 class User extends Model implements AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable, Authorizable, HasFactory;
 
     protected $table = "v1.users";
+
+    protected $primaryKey = 'person_id';
 
     /**
      * The attributes that are mass assignable.
@@ -36,4 +45,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $cast = [
         'email_verified_at' => 'datetime',
     ];
+
+    public $timestamps = true;
 }
