@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Person
+ * @property string id
+ * @property string name
  * @package App\Models
  */
 class Person extends Model
@@ -14,5 +16,5 @@ class Person extends Model
 
     protected $fillable = ['name'];
 
-    // public $timestamps = false;
+     public $timestamps = true;
 }

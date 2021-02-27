@@ -37,9 +37,9 @@ class UserController extends Controller
         return UserService::findById($id);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request): JsonResponse
     {
-        //
+        return UserService::update($request->all());
     }
 
     public function destroy(string $id)

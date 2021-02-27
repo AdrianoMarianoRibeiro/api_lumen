@@ -26,3 +26,5 @@ $router->get('/', function () use ($router) {
 
 $router->get('/users', 'V1\UserController@all');
 $router->get('/user/{id}', 'V1\UserController@show');
+$router->post('/user/create', 'V1\UserController@store');
+$router->post('/user/update', 'V1\UserController@update');

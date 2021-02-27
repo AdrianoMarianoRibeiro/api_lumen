@@ -4,11 +4,7 @@ namespace App\Http\Requests\User;
 
 use Pearl\RequestValidate\RequestAbstract;
 
-/**
- * Class PostRequest
- * @package App\Http\Requests\User
- */
-class PostRequest extends RequestAbstract
+class UpdateRequest extends RequestAbstract
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -30,8 +26,7 @@ class PostRequest extends RequestAbstract
         return [
             'id'=> ['required'],
             'name' => ['required', 'string'],
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string']
+            'email' => ['required', 'string', 'email']
         ];
     }
 
@@ -43,7 +38,7 @@ class PostRequest extends RequestAbstract
     public function messages(): array
     {
         return [
-//            'email' => ['Campo email obrigatório', 'Campo email é do tipo caracter.', 'Email inválido.']
+            //
         ];
     }
 }
