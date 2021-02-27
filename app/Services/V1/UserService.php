@@ -47,18 +47,18 @@ abstract class UserService implements ServiceInterface
                 throw new Exception("CPF/CNPJ: ${cpfCnpj} já existe.", Response::HTTP_BAD_REQUEST);
             }
             $person = PersonFactory::build();
-            $person->id = $data['id'];
+            $person->person_id = $data['id'];
             $person->name = $data['name'];
             $person->save();
 
-            if (strlen($person->id) === 11) {
+            if (strlen($person->person_id) === 11) {
                 $physicalPerson = PhysicalPersonFactory::build();
-                $physicalPerson->person_id = $person->id;
+                $physicalPerson->person_id = $person->person_id;
                 $physicalPerson->birth_date = $data['birth_date'];
                 $physicalPerson->save();
-            } elseif (strlen($person->id) === 14) {
+            } elseif (strlen($person->person_id) === 14) {
                 $legalPerson = LegalPersonFactory::build();
-                $legalPerson->person_id = $person->id;
+                $legalPerson->person_id = $person->person_id;
                 $legalPerson->company_name = $data['company_name'];
                 $legalPerson->save();
             }
@@ -68,7 +68,7 @@ abstract class UserService implements ServiceInterface
                 throw new Exception("Email ${data['email']} já existe.", Response::HTTP_BAD_REQUEST);
             }
             $user = UserFactory::build();
-            $user->person_id = $person->id;
+            $user->person_id = $person->person_id;
             $user->email = $data['email'];
             $user->password = encrypt($data['password']);
             $user->save();
@@ -107,20 +107,20 @@ abstract class UserService implements ServiceInterface
             $person->name = $data['name'];
             $person->update();
 
-            if (strlen($person->id) === 11) {
+            if (strlen($person->person_id) === 11) {
                 /** @var PhysicalPerson $physicalPerson */
-                $physicalPerson = PhysicalPerson::find($person->id);
+                $physicalPerson = PhysicalPerson::find($person->person_id);
                 $physicalPerson->birth_date = $data['birth_date'];
                 $physicalPerson->update();
-            } elseif (strlen($person->id) === 14) {
+            } elseif (strlen($person->person_id) === 14) {
                 /** @var LegalPerson $legalPerson */
-                $legalPerson = PhysicalPerson::find($person->id);
+                $legalPerson = PhysicalPerson::find($person->person_id);
                 $legalPerson->company_name = $data['company_name'];
                 $legalPerson->update();
             }
 
             /** @var User $user */
-            $user = User::find($person->id);
+            $user = User::find($person->person_id);
 
             /** @var User $userExist */
             $userExist = User::where('email', $data['email'])->first();
@@ -147,7 +147,23 @@ abstract class UserService implements ServiceInterface
      */
     public static function delete(string $id): JsonResponse
     {
-        // TODO: Implement delete() method.
+        try {
+            /** @var User $user */
+            $user = User::where('person_id', $id)->first();
+            $user->delete();
+
+            /** @var PhysicalPerson $physicalPerson */
+            $physicalPerson = PhysicalPerson::where('person_id', $id)->first();
+            $physicalPerson->delete();
+
+            /** @var Person $person */
+            $person = Person::where('person_id', $id)->first();
+            $person->delete();
+
+            return ResponseApi::success('Usuário excluido com sucesso!', true);
+        } catch (Throwable $e) {
+            return ResponseApi::error($e->getMessage(), ' file: ' . $e->getFile() . ' line: ' . $e->getLine() . ' ', $e->getCode());
+        }
     }
 
     /**
@@ -158,13 +174,13 @@ abstract class UserService implements ServiceInterface
     {
         try {
             /** @var Person $person */
-            $person = Person::where('id', $id)->first();
+            $person = Person::where('person_id', $id)->first();
             /** @var PhysicalPerson $physicalPerson */
             $physicalPerson = PhysicalPerson::where('person_id', $id)->first();
             /** @var User $user */
             $user = User::where('person_id', $id)->first();
             $data = [
-                'CPF/CNPJ' => Mask::mask('###.###.###-##', $person->id),
+                'CPF/CNPJ' => Mask::mask('###.###.###-##', $person->person_id),
                 'name' => $person->name,
                 'birth_date' => Carbon::parse($physicalPerson->birth_date)->format('d/m/Y H:i:s'),
                 'email' => $user->email
@@ -181,7 +197,14 @@ abstract class UserService implements ServiceInterface
     public static function all(): JsonResponse
     {
         try {
-            return ResponseApi::success('Lista de usuarios', User::all());
+            $users = DB::table('v1.users AS u')
+                ->select('p.person_id', 'p.name', 'u.email', 'p_p.birth_date')
+                ->join('v1.people AS p', 'u.person_id', '=', 'p.person_id')
+                ->join('v1.physical_people AS p_p', 'p.person_id', '=', 'p_p.person_id')
+                ->get()
+            ;
+
+            return ResponseApi::success('Lista de usuarios', $users);
         } catch (Throwable $e) {
             return ResponseApi::error($e->getMessage(), ' file: ' . $e->getFile() . ' line: ' . $e->getLine() . ' ', $e->getCode());
         }
