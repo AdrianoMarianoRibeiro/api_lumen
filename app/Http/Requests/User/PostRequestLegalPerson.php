@@ -5,10 +5,10 @@ namespace App\Http\Requests\User;
 use Pearl\RequestValidate\RequestAbstract;
 
 /**
- * Class PostRequest
+ * Class PostRequestLegalPerson
  * @package App\Http\Requests\User
  */
-class PostRequest extends RequestAbstract
+class PostRequestLegalPerson extends RequestAbstract
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -32,7 +32,7 @@ class PostRequest extends RequestAbstract
             'name' => ['required', 'string'],
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-            'birth_date' => ['required', 'string']
+            'company_name' => ['required', 'string'],
         ];
     }
 

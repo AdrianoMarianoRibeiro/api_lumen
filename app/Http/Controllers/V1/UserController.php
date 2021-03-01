@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\PostRequest;
+use App\Http\Requests\User\PostRequestLegalPerson;
 use App\Services\V1\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,18 +16,19 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     /**
-     * @return JsonResponse
-     */
-    public function index(): JsonResponse
-    {
-        return response()->json(['id' => 1]);
-    }
-
-    /**
      * @param PostRequest $request
      * @return JsonResponse
      */
     public function store(PostRequest $request): JsonResponse
+    {
+        return UserService::save($request->all());
+    }
+
+    /**
+     * @param PostRequestLegalPerson $request
+     * @return JsonResponse
+     */
+    public function storeLegalPerson(PostRequestLegalPerson $request): JsonResponse
     {
         return UserService::save($request->all());
     }
@@ -64,5 +66,13 @@ class UserController extends Controller
     public function all(): JsonResponse
     {
         return UserService::all();
+    }
+
+    /**
+     * @return JsonResponse
+     */
+    public function allLegalPerson(): JsonResponse
+    {
+        return UserService::allLegalPerson();
     }
 }
