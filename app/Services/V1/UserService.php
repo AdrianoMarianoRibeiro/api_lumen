@@ -35,19 +35,20 @@ abstract class UserService implements ServiceInterface
     {
         DB::beginTransaction();
         try {
-            $validate = Validate::cpfCnpj($data['id']);
+            $id = Mask::remove($data['id']);
+            $validate = Validate::cpfCnpj($id);
             if (!$validate->isValid()) {
-                $cpfCnpj = (strlen($data['id']) === 11) ? Mask::mask( '###.###.###-##', $data['id']) : Mask::mask('##.###.###/####-##', $data['id']);
+                $cpfCnpj = (strlen($id) === 11) ? Mask::mask( '###.###.###-##', $id) : Mask::mask('##.###.###/####-##', $id);
                 throw new Exception("CPF/CNPJ: ${cpfCnpj} inválido.", Response::HTTP_BAD_REQUEST);
             }
 
             $person = Person::find($validate->getValue());
             if ($person) {
-                $cpfCnpj = (strlen($data['id']) === 11) ? Mask::mask( '###.###.###-##', $data['id']) : Mask::mask('##.###.###/####-##', $data['id']);
+                $cpfCnpj = (strlen($id) === 11) ? Mask::mask( '###.###.###-##', $id) : Mask::mask('##.###.###/####-##', $id);
                 throw new Exception("CPF/CNPJ: ${cpfCnpj} já existe.", Response::HTTP_BAD_REQUEST);
             }
             $person = PersonFactory::build();
-            $person->person_id = $data['id'];
+            $person->person_id = $validate->getValue();
             $person->name = $data['name'];
             $person->save();
 
@@ -173,18 +174,30 @@ abstract class UserService implements ServiceInterface
     public static function findById(string $id): JsonResponse
     {
         try {
+            $id = Mask::remove($id);
+
             /** @var Person $person */
             $person = Person::where('person_id', $id)->first();
-            /** @var PhysicalPerson $physicalPerson */
-            $physicalPerson = PhysicalPerson::where('person_id', $id)->first();
+
+            if ($person && strlen($person->person_id) === 11) {
+                $data['CPF/CNPJ'] = Mask::mask('###.###.###-##', $person->person_id);
+                $data['name'] = $person->name;
+                /** @var PhysicalPerson $physicalPerson */
+                $physicalPerson = PhysicalPerson::where('person_id', $id)->first();
+                $data['birth_date'] = Carbon::parse($physicalPerson->birth_date)->format('d/m/Y H:i:s');
+            } elseif ($person && strlen($person->person_id) === 14) {
+                $data['CPF/CNPJ'] = Mask::mask('##.###.###/####-##', $person->person_id);
+                $data['name'] = $person->name;
+                /** @var LegalPerson $legalPerson */
+                $legalPerson = LegalPerson::where('person_id', $id)->first();
+                $data['company_name'] = $legalPerson->company_name;
+            } else {
+                return ResponseApi::warning('CPF/CNPJ não encontrado', false, Response::HTTP_NOT_FOUND);
+            }
+
             /** @var User $user */
             $user = User::where('person_id', $id)->first();
-            $data = [
-                'CPF/CNPJ' => Mask::mask('###.###.###-##', $person->person_id),
-                'name' => $person->name,
-                'birth_date' => Carbon::parse($physicalPerson->birth_date)->format('d/m/Y H:i:s'),
-                'email' => $user->email
-            ];
+            $data['email'] = $user->email;
             return ResponseApi::success('Detalhes do usuário', $data);
         } catch (Throwable $e) {
             return ResponseApi::error($e->getMessage(), ' file: ' . $e->getFile() . ' line: ' . $e->getLine() . ' ', $e->getCode());
@@ -201,6 +214,25 @@ abstract class UserService implements ServiceInterface
                 ->select('p.person_id', 'p.name', 'u.email', 'p_p.birth_date')
                 ->join('v1.people AS p', 'u.person_id', '=', 'p.person_id')
                 ->join('v1.physical_people AS p_p', 'p.person_id', '=', 'p_p.person_id')
+                ->get()
+            ;
+
+            return ResponseApi::success('Lista de usuarios', $users);
+        } catch (Throwable $e) {
+            return ResponseApi::error($e->getMessage(), ' file: ' . $e->getFile() . ' line: ' . $e->getLine() . ' ', $e->getCode());
+        }
+    }
+
+    /**
+     * @return JsonResponse
+     */
+    public static function allLegalPerson(): JsonResponse
+    {
+        try {
+            $users = DB::table('v1.users AS u')
+                ->select('p.person_id', 'p.name', 'u.email', 'l_p.company_name')
+                ->join('v1.people AS p', 'u.person_id', '=', 'p.person_id')
+                ->join('v1.legal_persons AS l_p', 'p.person_id', '=', 'l_p.person_id')
                 ->get()
             ;
 
